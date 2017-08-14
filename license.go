@@ -33,10 +33,21 @@ func main() {
 	quiet := false
 	cd := ``
 	argDone := false
+	nextFile := false
+	logFile := ``
 	for _, arg := range os.Args[1:] {
+		if nextFile {
+			nextFile = false
+			logFile = arg
+			continue
+		}
 		if !argDone {
 			if arg == `-q` {
 				quiet = true
+				continue
+			}
+			if arg == `-f` {
+				nextFile = true
 				continue
 			}
 			if arg == `--` {
@@ -49,13 +60,29 @@ func main() {
 			continue
 		}
 		fmt.Println("Unknown argument: `" + arg + "`!")
+		os.Exit(1)
 		return
 	}
+
+	var w io.Writer
+	if logFile == `` {
+		w = os.Stdout
+	} else {
+		f, err := os.Create(logFile)
+		if err != nil {
+			fmt.Println("Cannot create log file: "+logFile)
+			os.Exit(1)
+			return
+		}
+		defer f.Close() // Won't get called on os.Exit, but that's ok, since the OS will do it for us.
+		w = io.MultiWriter(os.Stdout, f)
+	}
+
 	if cd == `` {
 		/* Find the .git directory. */
 		p, err := os.Getwd()
 		if err != nil {
-			fmt.Println("Unable to get working directory: " + err.Error())
+			fmt.Fprintln(w, "Unable to get working directory: " + err.Error())
 			return
 		}
 		p = strings.TrimRight(p, `/`)
@@ -72,10 +99,10 @@ func main() {
 			patience--
 		}
 	}
-	fmt.Println("Using directory: " + cd)
+	fmt.Fprintln(w, "Using directory: " + cd)
 	err := os.Chdir(cd)
 	if err != nil {
-		fmt.Println("Failed to enter target directory: " + err.Error() + "!")
+		fmt.Fprintln(w, "Failed to enter target directory: " + err.Error() + "!")
 		return
 	}
 
@@ -130,7 +157,7 @@ func main() {
 	})
 	wg.Wait()
 	if err != nil {
-		fmt.Println(err)
+		fmt.Fprintln(w, err)
 		return
 	}
 
@@ -212,12 +239,12 @@ forUnknownFiles:
 				failed = true
 			}
 			if undoc || !quiet {
-				fmt.Printf("%-6s%40s %s\n", errStr, licStr, filename)
+				fmt.Fprintf(w, "%-6s%40s %s\n", errStr, licStr, filename)
 			}
 		}
 	}
 	for _, extra := range documented.Extra() {
-		fmt.Printf("%-6s%40s %s\n", "Error", "Extra-License!", extra)
+		fmt.Fprintf(w, "%-6s%40s %s\n", "Error", "Extra-License!", extra)
 		failed = true
 	}
 
