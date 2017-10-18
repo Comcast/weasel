@@ -172,6 +172,7 @@ func newMultiMatcher(in <-chan string) []License {
 
 	mmAppend(wordsApache, License("Apache"))
 	mmAppend(wordsApache2, License("Apache"))
+	mmAppend(wordsApache3, License("Apache"))
 	mmAppend(wordsBSD, License("BSD"))
 	mmAppend(wordsBSD2, License("BSD"))
 	mmAppend(wordsMIT, License("MIT"))
@@ -242,6 +243,7 @@ func makeWords(s string) []string {
 var (
 	wordsApache  = makeWords(`Licensed to the Apache Software Foundation (ASF) under one or more contributor license agreements.`)
 	wordsApache2 = makeWords(`Licensed under the Apache License`)
+	wordsApache3 = makeWords(`Apache License Version`)
 	wordsBSD     = makeWords(`Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:`)
 	wordsBSD2    = makeWords(`BSD`)
 	wordsMIT     = makeWords(`Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files`)
