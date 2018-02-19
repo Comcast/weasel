@@ -28,7 +28,7 @@ import (
 )
 
 func main() {
-	quiet := false
+	quiet := true
 	cd := ``
 	argDone := false
 	nextFile := false
@@ -42,6 +42,10 @@ func main() {
 		if !argDone {
 			if arg == `-q` {
 				quiet = true
+				continue
+			}
+			if arg == `-a` {
+				quiet = false
 				continue
 			}
 			if arg == `-f` {
@@ -97,7 +101,9 @@ func main() {
 			patience--
 		}
 	}
-	fmt.Fprintln(w, "Using directory: "+cd)
+	if !quiet {
+		fmt.Fprintln(w, "In directory: "+cd)
+	}
 	err := os.Chdir(cd)
 	if err != nil {
 		fmt.Fprintln(w, "Failed to enter target directory: "+err.Error()+"!")

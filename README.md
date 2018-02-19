@@ -30,7 +30,7 @@ To get started quickly, install `weasel` with `go get`:
 
 Then, `cd` into your project's directory and run:
 
-    weasel -q
+    weasel
 
 That will list all the potentially problematic licenses in the project. You'll
 probably need to configure your `.dependency_license` file to document the
@@ -48,7 +48,8 @@ considerably more serious.
 
 `weasel [-q] [--] <target_dir>`:
 
-  - `-q` Suppress the printing of non-problematic files.
+  - `-a` Print all files and their licenses, not just problematic files.
+  - `-q` Suppress the printing of non-problematic files. This is the default.
   - `--` Nothing after this is interpreted as an argument.
   - `<target_dir>` To run `weasel` against a different target. The
     target directory must be the root of the project. If it is omitted,
