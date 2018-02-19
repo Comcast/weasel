@@ -68,7 +68,7 @@ func main() {
 	} else {
 		f, err := os.Create(logFile)
 		if err != nil {
-			fmt.Println("Cannot create log file: "+logFile)
+			fmt.Println("Cannot create log file: " + logFile)
 			os.Exit(1)
 			return
 		}
@@ -80,7 +80,7 @@ func main() {
 		/* Find the .git directory. */
 		p, err := os.Getwd()
 		if err != nil {
-			fmt.Fprintln(w, "Unable to get working directory: " + err.Error())
+			fmt.Fprintln(w, "Unable to get working directory: "+err.Error())
 			return
 		}
 		p = strings.TrimRight(p, `/`)
@@ -97,13 +97,14 @@ func main() {
 			patience--
 		}
 	}
-	fmt.Fprintln(w, "Using directory: " + cd)
+	fmt.Fprintln(w, "Using directory: "+cd)
 	err := os.Chdir(cd)
 	if err != nil {
-		fmt.Fprintln(w, "Failed to enter target directory: " + err.Error() + "!")
+		fmt.Fprintln(w, "Failed to enter target directory: "+err.Error()+"!")
 		return
 	}
 
+	loadOverrides()
 	recordDocumentedLicenses()
 
 	files := make(map[string][]License)

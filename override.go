@@ -26,7 +26,7 @@ import (
 
 var override = make(map[string][]License)
 
-func init() {
+func loadOverrides() {
 	if _, err := os.Stat(`.dependency_license`); err != nil {
 		return
 	}
