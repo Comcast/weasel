@@ -16,9 +16,22 @@ limitations under the License.
 
 package main
 
-import "os/exec"
+import (
+	"os/exec"
+)
+
+var hasGit bool
+
+func init() {
+	if _, err := exec.LookPath(`git`); err == nil {
+		hasGit = true
+	}
+}
 
 func Ignored(f string) bool {
-	_, err := exec.Command(`git`, `check-ignore`, `-q`, f).CombinedOutput()
-	return err == nil
+	if hasGit {
+		_, err := exec.Command(`git`, `check-ignore`, `-q`, f).CombinedOutput()
+		return err == nil
+	}
+	return false
 }
