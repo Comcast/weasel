@@ -132,6 +132,18 @@ octothorp followed by a comment (which may not contain a comma!).
 
     commentable-char: Any character other than a ','
 
+Docker Image
+------------
+
+A docker image is published for weasel to facilitate use on platforms
+without a functional go installation and for users that do not wish to
+compiler it. You can get up and going immediately with weasel like this:
+
+    docker run --rm -v $(git rev-parse --show-toplevel 2>/dev/null || pwd):/src licenseweasel/weasel /src
+
+Since weasel is running in a container, you have to mount a volume with the
+source in it. You can also use weasel via `docker-compose`.
+
 Best Practices
 --------------
 
@@ -139,7 +151,7 @@ License management can be tricky at the best of times. The goal of this
 tool is to automate as much of that as possible. Here are some best
 practices:
 
--   **`weasel -q` before you commit.** If it prints anything, you
+-   **`weasel` before you commit.** If it prints anything, you
     probably need to add license headers.
 -   **Do not `Ignore` files.** If it's reasonable to quiet `weasel`
     about a false positive or negative in another way, do that instead.
