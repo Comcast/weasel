@@ -70,6 +70,23 @@ func main() {
 	if logFile == `` {
 		w = os.Stdout
 	} else {
+		/* Check for directory existence. */
+		logDir := filepath.Dir(logFile)
+		if fi, err := os.Stat(logDir); err != nil {
+			err := os.MkdirAll(logDir, 0777)
+			if err != nil {
+				fmt.Println("Cannot create log directory: " + err.Error())
+				os.Exit(1)
+				return
+			}
+		} else {
+			if !fi.IsDir() {
+				fmt.Println("Cannot create log directory, not a directory: " + logDir)
+				os.Exit(1)
+				return
+			}
+		}
+
 		f, err := os.Create(logFile)
 		if err != nil {
 			fmt.Println("Cannot create log file: " + logFile)
