@@ -22,6 +22,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime/pprof"
 	"sort"
 	"strings"
 	"sync"
@@ -34,6 +35,7 @@ func main() {
 	nextFile := false
 	logFile := ``
 	nextSubdir := false
+	profile := false
 	subdir := ``
 	for _, arg := range os.Args[1:] {
 		if nextFile {
@@ -63,6 +65,10 @@ func main() {
 				nextSubdir = true
 				continue
 			}
+			if arg == `-p` {
+				profile = true
+				continue
+			}
 			if arg == `--` {
 				argDone = true
 				continue
@@ -75,6 +81,20 @@ func main() {
 		fmt.Println("Unknown argument: `" + arg + "`!")
 		os.Exit(1)
 		return
+	}
+
+	if profile {
+		pf, err := os.Create("weasel.pprof")
+		if err != nil {
+			fmt.Println("Unable to start profiling: " + err.Error())
+			profile = false
+		} else {
+			err = pprof.StartCPUProfile(pf)
+			if err != nil {
+				fmt.Println("Unable to start profiling: " + err.Error())
+				profile = false
+			}
+		}
 	}
 
 	var w io.Writer
@@ -309,6 +329,9 @@ forUnknownFiles:
 		failed = true
 	}
 
+	if profile {
+		pprof.StopCPUProfile()
+	}
 	if failed {
 		os.Exit(1)
 	}
