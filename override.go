@@ -53,7 +53,7 @@ func loadOverrideFile(overrideFile string) {
 	if prefix == `.` {
 		prefix = ``
 	} else {
-		prefix = `^` + regexp.QuoteMeta(prefix+string(filepath.Separator))
+		prefix = regexp.QuoteMeta(prefix + string(filepath.Separator))
 	}
 
 	type licenseFilter struct {
@@ -84,9 +84,9 @@ func loadOverrideFile(overrideFile string) {
 		lic = strings.TrimSpace(lic)
 
 		if len(strRe) > 0 && strRe[0] == '^' {
-			strRe = prefix + strRe[1:]
+			strRe = `^` + prefix + strRe[1:]
 		} else {
-			strRe = prefix + ".*" + strRe
+			strRe = `^` + prefix + ".*" + strRe
 		}
 		re, cmpErr := regexp.Compile(strRe)
 		if cmpErr != nil {
