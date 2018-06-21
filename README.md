@@ -50,6 +50,8 @@ considerably more serious.
 
   - `-a` Print all files and their licenses, not just problematic files.
   - `-q` Suppress the printing of non-problematic files. This is the default.
+  - `-d <sub_dir>` Only run on files in the specified subdirectory.
+  - `-f <out_file>` Also write license results to `<out_file>`.
   - `--` Nothing after this is interpreted as an argument.
   - `<target_dir>` To run `weasel` against a different target. The
     target directory must be the root of the project. If it is omitted,

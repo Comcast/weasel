@@ -33,10 +33,17 @@ func main() {
 	argDone := false
 	nextFile := false
 	logFile := ``
+	nextSubdir := false
+	subdir := ``
 	for _, arg := range os.Args[1:] {
 		if nextFile {
 			nextFile = false
 			logFile = arg
+			continue
+		}
+		if nextSubdir {
+			nextSubdir = false
+			subdir = arg
 			continue
 		}
 		if !argDone {
@@ -50,6 +57,10 @@ func main() {
 			}
 			if arg == `-f` {
 				nextFile = true
+				continue
+			}
+			if arg == `-d` {
+				nextSubdir = true
 				continue
 			}
 			if arg == `--` {
@@ -97,6 +108,16 @@ func main() {
 		w = io.MultiWriter(os.Stdout, f)
 	}
 
+	if subdir != `` {
+		var err error
+		subdir, err = filepath.Abs(subdir)
+		if err != nil {
+			fmt.Fprintln(w, "Unable to get absolute directory for -d: "+err.Error())
+			os.Exit(1)
+			return
+		}
+	}
+
 	if cd == `` {
 		/* Find the .git directory. */
 		p, err := os.Getwd()
@@ -124,7 +145,25 @@ func main() {
 	err := os.Chdir(cd)
 	if err != nil {
 		fmt.Fprintln(w, "Failed to enter target directory: "+err.Error()+"!")
+		os.Exit(1)
 		return
+	}
+
+	if subdir == `` {
+		subdir = `.`
+	} else {
+		cur, err := os.Getwd()
+		if err != nil {
+			fmt.Fprintln(w, "Failed to get working dir: "+err.Error())
+			os.Exit(1)
+			return
+		}
+		subdir, err = filepath.Rel(cur, subdir)
+		if err != nil {
+			fmt.Fprintln(w, "Failed to get relative subdir: "+err.Error())
+			os.Exit(1)
+			return
+		}
 	}
 
 	loadOverrides()
@@ -133,7 +172,7 @@ func main() {
 	files := make(map[string][]License)
 	var wg sync.WaitGroup
 	var filesLock sync.Mutex
-	err = filepath.Walk(`.`, func(name string, info os.FileInfo, err error) error {
+	err = filepath.Walk(subdir, func(name string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
