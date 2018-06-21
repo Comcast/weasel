@@ -27,15 +27,34 @@ import (
 var override = make(map[string][]License)
 
 func loadOverrides() {
-	if _, err := os.Stat(`.dependency_license`); err != nil {
+	filepath.Walk(".", func(name string, info os.FileInfo, err error) error {
+		if filepath.Base(name) == `.git` {
+			return filepath.SkipDir
+		}
+
+		if strings.HasSuffix(name, `.dependency_license`) {
+			loadOverrideFile(name)
+		}
+		return nil
+	})
+}
+func loadOverrideFile(overrideFile string) {
+	if _, err := os.Stat(overrideFile); err != nil {
 		return
 	}
 
-	f, err := os.Open(`.dependency_license`)
+	f, err := os.Open(overrideFile)
 	if err != nil {
 		panic(err)
 	}
 	defer f.Close()
+
+	prefix := filepath.Dir(overrideFile)
+	if prefix == `.` {
+		prefix = ``
+	} else {
+		prefix = `^` + regexp.QuoteMeta(prefix+string(filepath.Separator))
+	}
 
 	type licenseFilter struct {
 		License License
@@ -54,7 +73,7 @@ func loadOverrides() {
 
 		parts := strings.Split(line, ",")
 		if len(parts) < 2 {
-			panic("Malformed line in .dependency_license: " + line)
+			panic("Malformed line in " + overrideFile + ": " + line)
 		}
 
 		strRe, lic := strings.Join(parts[:len(parts)-1], `,`), parts[len(parts)-1]
@@ -64,6 +83,11 @@ func loadOverrides() {
 		}
 		lic = strings.TrimSpace(lic)
 
+		if len(strRe) > 0 && strRe[0] == '^' {
+			strRe = prefix + strRe[1:]
+		} else {
+			strRe = prefix + ".*" + strRe
+		}
 		re, cmpErr := regexp.Compile(strRe)
 		if cmpErr != nil {
 			panic("Malformed regexp: " + strRe + "\n" + cmpErr.Error())
