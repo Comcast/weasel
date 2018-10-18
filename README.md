@@ -128,6 +128,7 @@ octothorp followed by a comment (which may not contain a comma!).
         'X11'       MIT License, by an older name.
         'WTFPL'     Do What the Fuck You Want to Public License
         'GPL/LGPL'  Either the GNU General Public License or the GNU Lesser General Public License
+        'PD'        Public Domain
         'Docs'      A documentation file
         'Empty'     An empty file
         'Ignored'   A file that ought not be analyzed for compliance
