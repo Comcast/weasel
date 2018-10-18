@@ -261,4 +261,5 @@ var (
 	wordsLGPL2   = makeWords(`LGPL`)
 	wordsLGPL3   = makeWords(`LGPLv2`)
 	wordsLGPL4   = makeWords(`LGPLv3`)
+	wordsPD      = makeWords(`Public Domain`)
 )
