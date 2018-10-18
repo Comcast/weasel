@@ -190,6 +190,7 @@ func newMultiMatcher(in <-chan string) []License {
 	mmAppend(wordsLGPL2, License("GPL/LGPL"))
 	mmAppend(wordsLGPL3, License("GPL/LGPL"))
 	mmAppend(wordsLGPL4, License("GPL/LGPL"))
+	mmAppend(wordsPD, License("PD"))
 
 	for word := range in {
 		for _, m := range mm {
