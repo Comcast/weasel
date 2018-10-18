@@ -17,6 +17,7 @@
 
 # Repository description files that don't bear headers.
 \.gitignore, Apache
+VERSION, Apache
 
 # Remove false positives.
 \.dependency_license, !BSD

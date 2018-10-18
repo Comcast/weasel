@@ -28,6 +28,9 @@ import (
 	"sync"
 )
 
+// Version is the application version number for weasel
+const Version = "0.0.3"
+
 func main() {
 	quiet := true
 	cd := ``
@@ -37,6 +40,8 @@ func main() {
 	nextSubdir := false
 	profile := false
 	subdir := ``
+	printVersion := false
+
 	for _, arg := range os.Args[1:] {
 		if nextFile {
 			nextFile = false
@@ -69,6 +74,10 @@ func main() {
 				profile = true
 				continue
 			}
+			if arg == `-v` {
+				printVersion = true
+				continue
+			}
 			if arg == `--` {
 				argDone = true
 				continue
@@ -81,6 +90,10 @@ func main() {
 		fmt.Println("Unknown argument: `" + arg + "`!")
 		os.Exit(1)
 		return
+	}
+	if printVersion {
+		fmt.Println(Version)
+		os.Exit(0)
 	}
 
 	if profile {

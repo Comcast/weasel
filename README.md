@@ -166,3 +166,10 @@ practices:
     are not usually difficult to fix, but automatic running allows them
     to be fixed promptly.
 
+
+Building Weasel Binaries
+--------------
+1. Ensure the `VERSION` file reflects the target release version info
+2. `docker-compose -f docker-compose.build_bin.yml build --no-cache && docker-compose -f docker-compose.build_bin.yml up`
+
+Your ./dist directory should be filled with archives of binaries and source tarballs
