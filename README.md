@@ -61,9 +61,9 @@ considerably more serious.
 `LICENSE`
 ---------
 
-The `LICENSE` file is at the root of the project (from whence you ought
-to run `license`). This must comply with the requirements of the Apache
-Software Foundation and is intended for human consumption.
+The `LICENSE` file is at the root of the project (whence you ought to run
+`weasel`). This must comply with the requirements of the Apache Software
+Foundation and is intended for human consumption.
 
 Nevertheless, with a bit of careful writing, it's possible to have
 `weasel` help verify that everything gets covered.
@@ -140,7 +140,7 @@ Docker Image
 
 A docker image is published for weasel to facilitate use on platforms
 without a functional go installation and for users that do not wish to
-compiler it. You can get up and going immediately with weasel like this:
+compile it. You can get up and going immediately with weasel like this:
 
     docker run --rm -v $(git rev-parse --show-toplevel 2>/dev/null || pwd):/src licenseweasel/weasel /src
 
