@@ -31,14 +31,20 @@ func loadOverrides() {
 		if filepath.Base(name) == `.git` {
 			return filepath.SkipDir
 		}
-
+		if info.IsDir() {
+			return nil
+		}
 		if strings.HasSuffix(name, `.dependency_license`) {
-			loadOverrideFile(name)
+			loadOverrideFile(name, false)
+		}
+		if strings.Contains(name, `.dependency_licenses`+string(os.PathSeparator)) {
+			loadOverrideFile(name, true)
 		}
 		return nil
 	})
 }
-func loadOverrideFile(overrideFile string) {
+
+func loadOverrideFile(overrideFile string, isDir bool) {
 	if _, err := os.Stat(overrideFile); err != nil {
 		return
 	}
@@ -50,6 +56,9 @@ func loadOverrideFile(overrideFile string) {
 	defer f.Close()
 
 	prefix := filepath.Dir(overrideFile)
+	if isDir {
+		prefix = filepath.Dir(prefix) // for files in .dependency_files directories, apply the regexes to the parent directory
+	}
 	if prefix == `.` {
 		prefix = ``
 	} else {

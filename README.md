@@ -135,6 +135,8 @@ octothorp followed by a comment (which may not contain a comma!).
 
     commentable-char: Any character other than a ','
 
+You can also create a `.dependency_licenses` directory, and all files inside will be used as overrides, with their paths applied to the parent directory.
+
 Docker Image
 ------------
 
