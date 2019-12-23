@@ -30,7 +30,7 @@ import (
 )
 
 // Version is the application version number for weasel
-const Version = "0.0.3"
+const Version = "0.0.4"
 
 func main() {
 	var all bool
