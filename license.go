@@ -18,6 +18,7 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"io"
 	"os"
@@ -32,65 +33,26 @@ import (
 const Version = "0.0.3"
 
 func main() {
-	quiet := true
-	cd := ``
-	argDone := false
-	nextFile := false
-	logFile := ``
-	nextSubdir := false
-	profile := false
-	subdir := ``
-	printVersion := false
+	var all bool
+	flag.BoolVar(&all, "a", false, "Print all files and their licenses, not just problematic files.")
+	var subdir string
+	flag.StringVar(&subdir, "d", "", "Only run on files in the specified subdirectory")
+	var logFile string
+	flag.StringVar(&logFile, "f", "", "Send output to this file (in addition to stdout)")
+	var profile bool
+	flag.BoolVar(&profile, "p", false, "Collect and output profiling statistics.")
+	var printVersion bool
+	flag.BoolVar(&printVersion, "v", false, "Print version and exit.")
+	flag.Parse()
+	quiet := !all
 
-	for _, arg := range os.Args[1:] {
-		if nextFile {
-			nextFile = false
-			logFile = arg
-			continue
-		}
-		if nextSubdir {
-			nextSubdir = false
-			subdir = arg
-			continue
-		}
-		if !argDone {
-			if arg == `-q` {
-				quiet = true
-				continue
-			}
-			if arg == `-a` {
-				quiet = false
-				continue
-			}
-			if arg == `-f` {
-				nextFile = true
-				continue
-			}
-			if arg == `-d` {
-				nextSubdir = true
-				continue
-			}
-			if arg == `-p` {
-				profile = true
-				continue
-			}
-			if arg == `-v` {
-				printVersion = true
-				continue
-			}
-			if arg == `--` {
-				argDone = true
-				continue
-			}
-		}
-		if cd == `` {
-			cd = arg
-			continue
-		}
-		fmt.Println("Unknown argument: `" + arg + "`!")
-		os.Exit(1)
-		return
+	args := flag.Args()
+	var cd string
+	if len(args) > 0 {
+		cd = args[len(args)-1]
 	}
+
+
 	if printVersion {
 		fmt.Println(Version)
 		os.Exit(0)
