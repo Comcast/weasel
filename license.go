@@ -43,6 +43,7 @@ func main() {
 	flag.BoolVar(&profile, "p", false, "Collect and output profiling statistics.")
 	var printVersion bool
 	flag.BoolVar(&printVersion, "v", false, "Print version and exit.")
+	_ = flag.Bool("q", true, "Only print problematic files. DEPRECATED: as of v0.0.4 this flag is deprecated and does nothing - just use -a or its absence.")
 	flag.Parse()
 	quiet := !all
 
