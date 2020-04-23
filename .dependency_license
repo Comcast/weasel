@@ -18,16 +18,3 @@
 # Repository description files that don't bear headers.
 \.gitignore, Apache
 VERSION, Apache
-
-# Remove false positives.
-\.dependency_license, !BSD
-\.dependency_license, !MIT
-\.dependency_license, !WTFPL
-\.dependency_license, !X11
-README.md, !BSD
-README.md, !GPL/LGPL
-README.md, !MIT
-README.md, !WTFPL
-README.md, !X11
-CONTRIBUTING.md, !GPL/LGPL
-licenseList\.go, !BSD
