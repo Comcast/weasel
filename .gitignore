@@ -1,3 +1,7 @@
 weasel
 dist/*
+spdx_licenses/*
+spdx-tools/*
+spdx.db
+dbmaker/dbmaker
 !dist/.dockerignore

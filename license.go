@@ -12,21 +12,30 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
+
+SPDX-License-Identifier: Apache-2.0
 */
 
 package main
 
+//go:generate bash make_licenses.sh
+
 import (
-	"bufio"
+	"bytes"
 	"flag"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime/pprof"
 	"sort"
 	"strings"
 	"sync"
+	"unicode"
+
+	"github.com/google/licenseclassifier"
+	"github.com/google/licenseclassifier/stringclassifier"
 )
 
 // Version is the application version number for weasel
@@ -52,7 +61,6 @@ func main() {
 	if len(args) > 0 {
 		cd = args[len(args)-1]
 	}
-
 
 	if printVersion {
 		fmt.Println(Version)
@@ -168,6 +176,7 @@ func main() {
 	files := make(map[string][]License)
 	var wg sync.WaitGroup
 	var filesLock sync.Mutex
+	throttle := make(chan struct{}, 32)
 	err = filepath.Walk(subdir, func(name string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -198,6 +207,8 @@ func main() {
 
 		wg.Add(1)
 		go func(name string) {
+			throttle <- struct{}{}
+			defer func() { <-throttle }()
 			defer wg.Done()
 			licenses, err := fileLicenses(name)
 			if err != nil {
@@ -240,10 +251,10 @@ forUnknownFiles:
 
 	for name, licenses := range files {
 		if len(licenses) != 0 {
-			if len(licenses) > 1 || (licenses[0] != License(`Apache`) && licenses[0] != License(`Docs`) && licenses[0] != License(`Empty`) && licenses[0] != License(`Ignore`)) {
+			if len(licenses) > 1 || (licenses[0] != License(`Apache-2.0`) && licenses[0] != License(`Docs`) && licenses[0] != License(`Empty`) && licenses[0] != License(`Ignore`)) {
 				if !documented.Documents(name) {
 					for i, lic := range licenses {
-						if lic != License(`Apache`) && lic != License(`Docs`) && lic != License(`Empty`) && lic != License(`Ignore`) {
+						if lic != License(`Apache-2.0`) && lic != License(`Docs`) && lic != License(`Empty`) && lic != License(`Ignore`) {
 							licenses[i] = License(string(licenses[i]) + `!`)
 						}
 					}
@@ -315,29 +326,132 @@ forUnknownFiles:
 }
 
 func fileLicenses(name string) ([]License, error) {
+	spdx, err := spdxLicenses(name)
+	if err != nil {
+		return nil, err
+	}
+	if len(spdx) > 0 {
+		return spdx, nil // If they provided an explicit SPDX id, just use that.
+	}
+
+	fi, err := os.Stat(name)
+	if err != nil {
+		return nil, err
+	}
+	if fi.Size() > 2*1024*1024 {
+		return nil, nil
+	}
+
 	f, err := os.Open(name)
 	if err != nil {
 		return nil, err
 	}
+	defer f.Close()
 
 	return identifyLicenses(f)
 }
 
-func identifyLicenses(in io.Reader) ([]License, error) {
+func spdxLicenses(name string) ([]License, error) {
+	fi, err := os.Stat(name)
+	if err != nil {
+		return nil, err
+	}
 
-	ch := make(chan string, 32)
-	go func() {
-		s := bufio.NewScanner(in)
-		s.Split(bufio.ScanWords)
-		for s.Scan() {
-			s := strings.ToLower(stripPunc(s.Text()))
-			if len(s) > 0 {
-				ch <- s
-			}
+	f, err := os.Open(name)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	const maxBuffer = 2 * 1024 // Only check the first and last 10k of the file, for performance.
+
+	if fi.Size() < maxBuffer {
+		b, err := ioutil.ReadAll(f)
+		if err != nil {
+			return nil, fmt.Errorf("Unable to read all of file %s: %v", name, err)
 		}
-		close(ch)
-	}()
+		return spdxLicenseSearch(b), nil
+	}
 
-	licenses := newMultiMatcher(ch)
+	b := make([]byte, maxBuffer)
+	n, err := f.Read(b)
+	if err != nil && err != io.EOF {
+		return nil, fmt.Errorf("Unable to read top of %s: %v", name, err)
+	}
+	topLicenses := spdxLicenseSearch(b[:n])
+
+	tail := fi.Size() - maxBuffer
+	if tail < maxBuffer {
+		tail = maxBuffer
+	}
+	n, err = f.ReadAt(b, tail)
+	if err != nil && err != io.EOF {
+		return nil, fmt.Errorf("Unable to read tail of %s: %v", name, err)
+	}
+	tailLicenses := spdxLicenseSearch(b[:n])
+	return append(topLicenses, tailLicenses...), nil
+}
+
+func spdxLicenseSearch(b []byte) []License {
+	spdxShort := []byte("SPDX-License-Identifier:")
+
+	var licenses []License
+	lines := bytes.Split(b, []byte("\n"))
+forLines:
+	for _, line := range lines {
+		idx := bytes.Index(line, spdxShort)
+		if idx >= 0 {
+			prefix := line[:idx]
+			prefixAlpha := 0
+			for _, c := range string(prefix) {
+				if unicode.IsLetter(c) {
+					prefixAlpha++
+					if prefixAlpha > 5 {
+						continue forLines
+					}
+				}
+			}
+
+			suffixIdx := idx + len(spdxShort)
+			if suffixIdx >= len(line) {
+				continue forLines
+			}
+			suffix := bytes.Trim(line[suffixIdx:], ` `)
+			licenses = append(licenses, License(suffix))
+		}
+	}
+	return licenses
+}
+
+var classifier *licenseclassifier.License
+
+func init() {
+	var err error
+	classifier, err = licenseclassifier.New(0.8, licenseclassifier.ArchiveBytes(LicenseDBContents))
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to initialize classifier: %v\n", err)
+		os.Exit(-1)
+	}
+}
+
+func identifyLicenses(in io.Reader) ([]License, error) {
+	var licenses Licenses
+	b, err := ioutil.ReadAll(in)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to read all of file: %v", err)
+	}
+
+	var matches stringclassifier.Matches
+	if err == nil {
+		matches = classifier.MultipleMatch(string(b), true)
+	} else {
+		return nil, fmt.Errorf("Cannot create classifier: %v\n", err)
+	}
+
+	for _, match := range matches {
+		if match != nil {
+			licenses = append(licenses, License(match.Name))
+		}
+	}
 	return licenses, nil
 }

@@ -14,7 +14,9 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+#
+# SPDX-License-Identifier: Apache-2.0
 
 # Repository description files that don't bear headers.
-\.gitignore, Apache
-VERSION, Apache
+\.gitignore, Apache-2.0
+VERSION, Apache-2.0
