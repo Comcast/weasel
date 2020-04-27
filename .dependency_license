@@ -20,3 +20,8 @@
 # Repository description files that don't bear headers.
 \.gitignore, Apache-2.0
 VERSION, Apache-2.0
+
+# Go Modules files that don't bear headers.
+go.mod, Apache-2.0
+go.sum, Apache-2.0
+vendor/modules.txt, Apache-2.0

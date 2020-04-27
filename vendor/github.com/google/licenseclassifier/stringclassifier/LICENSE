@@ -200,11 +200,3 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-
-licenseclassifier used under the Apache 2.0 License:
-@vendor/github.com/google/licenseclassifier/*
-./vendor/github.com/google/licenseclassifier/LICENSE
-
-go-diff used under the MIT License:
-@vendor/github.com/sergi/go-diff/*
-./vendor/github.com/sergi/go-diff/LICENSE
