@@ -17,8 +17,6 @@ specific language governing permissions and limitations
 under the License.
 
 SPDX-License-Identifier: Apache-2.0
-
-SPDX-License-Identifier: Apache-2.0
 */
 package main
 
