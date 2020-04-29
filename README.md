@@ -149,6 +149,29 @@ compile it. You can get up and going immediately with weasel like this:
 Since weasel is running in a container, you have to mount a volume with the
 source in it. You can also use weasel via `docker-compose`.
 
+### Docker Image Licensing
+
+Source code for `weasel` is licensed under Apache-2.0; available in the LICENSE
+file in this repository.
+
+The image is built from scratch and includes git and it's dependencies glibc
+and zlib. Their licenses can be found here:
+
+  - `git`: GPLv2, source repo at https://github.com/git/git
+  - `glibc`: LGPLv2.1, releases available at https://www.gnu.org/software/libc/
+  - `zlib`: zlib License, releases available at https://www.zlib.net/
+
+You can export the sources tarball with full source for the dependency from the
+image with:
+
+```
+export TMP_CONTAINER="$(docker create weasel:latest)"
+docker export $TMP_CONTAINER | tar -x sources.tgz
+docker rm $TMP_CONTAINER
+```
+
+Full licenses for these components are included in the source tarball.
+
 Best Practices
 --------------
 
