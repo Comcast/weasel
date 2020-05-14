@@ -64,7 +64,7 @@ func main() {
 
 	if printVersion {
 		fmt.Println(Version)
-		os.Exit(0)
+		exit(0)
 	}
 
 	if profile {
@@ -91,13 +91,13 @@ func main() {
 			err := os.MkdirAll(logDir, 0777)
 			if err != nil {
 				fmt.Println("Cannot create log directory: " + err.Error())
-				os.Exit(1)
+				exit(1)
 				return
 			}
 		} else {
 			if !fi.IsDir() {
 				fmt.Println("Cannot create log directory, not a directory: " + logDir)
-				os.Exit(1)
+				exit(1)
 				return
 			}
 		}
@@ -105,7 +105,7 @@ func main() {
 		f, err := os.Create(logFile)
 		if err != nil {
 			fmt.Println("Cannot create log file: " + logFile)
-			os.Exit(1)
+			exit(1)
 			return
 		}
 		defer f.Close() // Won't get called on os.Exit, but that's ok, since the OS will do it for us.
@@ -117,7 +117,7 @@ func main() {
 		subdir, err = filepath.Abs(subdir)
 		if err != nil {
 			fmt.Fprintln(w, "Unable to get absolute directory for -d: "+err.Error())
-			os.Exit(1)
+			exit(1)
 			return
 		}
 	}
@@ -146,12 +146,15 @@ func main() {
 	if !quiet {
 		fmt.Fprintln(w, "In directory: "+cd)
 	}
-	err := os.Chdir(cd)
-	if err != nil {
-		fmt.Fprintln(w, "Failed to enter target directory: "+err.Error()+"!")
-		os.Exit(1)
-		return
+	if cd != `` {
+		err := os.Chdir(cd)
+		if err != nil {
+			fmt.Fprintln(w, "Failed to enter target directory: "+err.Error()+"!")
+			exit(1)
+			return
+		}
 	}
+	initGit()
 
 	if subdir == `` {
 		subdir = `.`
@@ -159,13 +162,13 @@ func main() {
 		cur, err := os.Getwd()
 		if err != nil {
 			fmt.Fprintln(w, "Failed to get working dir: "+err.Error())
-			os.Exit(1)
+			exit(1)
 			return
 		}
 		subdir, err = filepath.Rel(cur, subdir)
 		if err != nil {
 			fmt.Fprintln(w, "Failed to get relative subdir: "+err.Error())
-			os.Exit(1)
+			exit(1)
 			return
 		}
 	}
@@ -177,7 +180,7 @@ func main() {
 	var wg sync.WaitGroup
 	var filesLock sync.Mutex
 	throttle := make(chan struct{}, 32)
-	err = filepath.Walk(subdir, func(name string, info os.FileInfo, err error) error {
+	err := filepath.Walk(subdir, func(name string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -320,9 +323,9 @@ forUnknownFiles:
 		pprof.StopCPUProfile()
 	}
 	if failed {
-		os.Exit(1)
+		exit(1)
 	}
-	os.Exit(0)
+	exit(0)
 }
 
 func fileLicenses(name string) ([]License, error) {
@@ -430,7 +433,7 @@ func init() {
 	classifier, err = licenseclassifier.New(0.8, licenseclassifier.ArchiveBytes(LicenseDBContents))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to initialize classifier: %v\n", err)
-		os.Exit(-1)
+		exit(-1)
 	}
 }
 
@@ -454,4 +457,9 @@ func identifyLicenses(in io.Reader) ([]License, error) {
 		}
 	}
 	return licenses, nil
+}
+
+func exit(code int) {
+	cleanupGit()
+	os.Exit(code)
 }

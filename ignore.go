@@ -19,6 +19,8 @@ SPDX-License-Identifier: Apache-2.0
 package main
 
 import (
+	"io/ioutil"
+	"os"
 	"os/exec"
 )
 
@@ -32,8 +34,41 @@ func init() {
 
 func Ignored(f string) bool {
 	if hasGit {
-		_, err := exec.Command(`git`, `check-ignore`, `-q`, f).CombinedOutput()
-		return err == nil
+		if tmpGitDir != "" {
+			_, err := exec.Command(`git`, `--git-dir=`+tmpGitDir+"/.git", `check-ignore`, `-q`, f).CombinedOutput()
+			return err == nil
+		} else {
+			_, err := exec.Command(`git`, `check-ignore`, `-q`, f).CombinedOutput()
+			return err == nil
+		}
 	}
 	return false
+}
+
+var tmpGitDir string
+
+func initGit() {
+	if hasGit {
+		if _, err := os.Stat(`.git`); os.IsNotExist(err) {
+			dir, err := ioutil.TempDir("", "weasel-git-")
+			if err != nil {
+				return
+			}
+			tmpGitDir = dir
+
+			cmd := exec.Command(`git`, `init`)
+			cmd.Dir = tmpGitDir
+			_, err = cmd.CombinedOutput()
+			if err != nil {
+				cleanupGit()
+				return
+			}
+		}
+	}
+}
+
+func cleanupGit() {
+	if tmpGitDir != "" {
+		os.RemoveAll(tmpGitDir)
+	}
 }
