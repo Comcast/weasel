@@ -162,10 +162,10 @@ and zlib. Their licenses can be found here:
   - `zlib`: zlib License, releases available at https://www.zlib.net/
 
 You can export the sources tarball with full source for the dependency from the
-image with:
+source image (licenseweasel/weasel-src) with:
 
 ```
-export TMP_CONTAINER="$(docker create weasel:latest)"
+export TMP_CONTAINER="$(docker create licenseweasel/weasel-src:latest)"
 docker export $TMP_CONTAINER | tar -x sources.tgz
 docker rm $TMP_CONTAINER
 ```
