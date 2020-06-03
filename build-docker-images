@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -x
+
+pushd "${0%/*}"
+VERSION=$(git describe --tags)
+docker build -t licenseweasel/weasel:$VERSION -t licenseweasel/weasel:latest --target bin .
+docker build -t licenseweasel/weasel-src:$VERSION -t licenseweasel/weasel-src:latest --target src .
+popd
