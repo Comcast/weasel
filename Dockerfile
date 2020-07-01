@@ -18,7 +18,6 @@ FROM golang:1.10-alpine AS build-weasel
 WORKDIR /go/src/weasel
 COPY . .
 RUN CGO_ENABLED=0 go install weasel
-RUN CGO_ENABLED=0 go install weasel/dedup
 
 # Build git
 FROM debian AS build-git
@@ -40,10 +39,8 @@ RUN ldd /opt/git/bin/git | tr -s '[:blank:]' '\n' | grep '^/' | \
 # Create empty image with only the required binaries
 FROM scratch AS bin
 COPY --from=build-weasel /go/bin/weasel /usr/bin/weasel
-COPY --from=build-weasel /go/bin/dedup /usr/bin/dedup
 COPY --from=build-git /opt/git /opt/git
 COPY --from=build-git /deps /
-RUN ["/usr/bin/dedup", "/opt/git/libexec/git-core"]
 ENV PATH="/opt/git/bin:${PATH}"
 ENTRYPOINT ["/usr/bin/weasel"]
 CMD []
