@@ -172,6 +172,37 @@ docker rm $TMP_CONTAINER
 
 Full licenses for these components are included in the source tarball.
 
+GitHub Action
+-------------
+
+`weasel` runs as a GitHub action as-is. You can easily and automatically
+run it on pushes and pull request by creating a file at
+`.github/workflows/weasel.yml` with these contents:
+
+```.yaml
+name: Weasel License Validation
+on:
+  push:
+  create:
+  pull_request:
+    types:
+    - opened
+    - reopened
+    - edited
+    - synchronize
+jobs:
+  weasel:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Run weasel
+      uses: docker://licenseweasel/weasel:v0.4
+```
+
+Of course, be sure to put the appropriate licensing information for your
+project as necessary.
+
 Best Practices
 --------------
 
@@ -189,7 +220,8 @@ practices:
     future files as well.
 -   **Run `weasel` as part of Continuous Integration.** Issues
     are not usually difficult to fix, but automatic running allows them
-    to be fixed promptly.
+    to be fixed promptly. If you use GitHub, see above for easy
+    integration with GitHub Actions.
 
 
 Building Weasel Binaries
