@@ -137,6 +137,15 @@ octothorp followed by a comment (which may not contain a comma!).
 
 You can also create a `.dependency_licenses` directory, and all files inside will be used as overrides, with their paths applied to the parent directory.
 
+Output
+------
+
+`weasel` prints out problematic files with an exclamation point after the license name. If no licensing or file information could be determined, `Unknown!` is printed as the license. If the general file type is determined `Unknown-type!` is used as the license.
+
+If `weasel` determines the type of the file and the type isn't `Apache-2.0`, then it needs to appear explicitly in the LICENSE file. So a `!` after a recognized license means that the file doesn't match one of the entries in the main LICENSE file.
+
+If the license contains a `~`, it means licensing was determined by looking at a LICENSE file in the same directory. This helps with licensing for vendored dependencies.
+
 Docker Image
 ------------
 
