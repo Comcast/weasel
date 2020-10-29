@@ -237,7 +237,7 @@ forUnknownFiles:
 		if len(licenses) == 0 {
 			parts := strings.Split(name, `/`)
 			for i := len(parts) - 1; i > 0; i-- {
-				for _, licName := range []string{`LICENSE`, `LICENCE`, `LICENSE.md`, `LICENCE.md`, `LICENSE.txt`, `LICENCE.txt`} {
+				for _, licName := range []string{`LICENSE`, `LICENCE`, `LICENSE.md`, `LICENCE.md`, `LICENSE.txt`, `LICENCE.txt`, `COPYING`, `COPYING.md`, `COPYING.txt`} {
 					licPath := strings.Join(parts[:i], `/`) + `/` + licName
 					if len(files[licPath]) != 0 {
 						for _, license := range files[licPath] {
